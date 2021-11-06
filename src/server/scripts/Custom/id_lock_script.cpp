@@ -43,6 +43,7 @@ public:
         uint8 const is_group = 1 << 0;
         uint8 const is_open = 1 << 1;
         uint8 const is_buy = 1 << 2;
+        uint8 const can_expire = 1 << 3;
 
         std::unordered_set<uint32> read_group_members(Player* player)
         {
@@ -105,20 +106,25 @@ public:
 
         bool is_expired(id_lock_entry const& entry)
         {
-            auto start = time_t(entry.duration_owner);
-            return (start + entry.duration_owner) <= GameTime::GetGameTime();
+            if (can_expire & entry.lock_id)
+            {
+                auto start = time_t(entry.duration_owner);
+                return (start + entry.duration_owner) <= GameTime::GetGameTime();
+            }
+
+            return false;
         }
 
         bool Open(id_lock_entry const& entry)
         {
             me->UseDoorOrButton(entry.duration_open);
-            return false;
+            return true;
         }
 
         bool Teleport(id_lock_entry const& entry, Player* player)
         {
             player->TeleportTo(entry.map_id, entry.x, entry.y, entry.z, entry.orientation);
-            return false;
+            return true;
         }
 
         bool Buy(Player* player)
