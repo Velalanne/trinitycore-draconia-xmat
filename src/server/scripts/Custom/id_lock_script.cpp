@@ -123,7 +123,7 @@ public:
 
         bool Buy(Player* player)
         {
-            return false;
+            return Deny(player);
         }
 
         bool Deny(Player* player)
