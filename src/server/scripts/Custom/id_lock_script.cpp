@@ -67,7 +67,7 @@ public:
 
         std::vector<id_lock_entry> read_id_lock_entries()
         {
-            auto gob_guid = me->GetGUID().GetEntry();
+            auto gob_guid = me->GetSpawnId();
             auto stmt = WorldDatabase.GetPreparedStatement(WORLD_SEL_ID_LOCK);
             stmt->setUInt32(0, gob_guid);
             auto result = WorldDatabase.Query(stmt);
