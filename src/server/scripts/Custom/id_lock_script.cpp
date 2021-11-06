@@ -7,7 +7,8 @@
 #include "DatabaseEnv.h"
 #include "DatabaseEnvFwd.h"
 #include "Log.h"
-#include "WorldPacket.h"
+#include "AllPackets.h"
+#include "ChatPackets.h"
 #include "GameTime.h"
 #include <unordered_set>
 #include <vector>
@@ -22,7 +23,7 @@ struct id_lock_entry
     float y;
     float z;
     float orientation;
-    uint32 map;
+    uint32 map_id;
     uint32 price;
     uint32 duration_open;
     uint32 duration_owner;
@@ -46,14 +47,19 @@ public:
         std::unordered_set<uint32> read_group_members(Player* player)
         {
             auto members = std::unordered_set<uint32>();
+            members.insert(player->GetGUID().GetCounter());
             auto group = player->GetGroup();
-            auto member = group->GetFirstMember();
 
-            members.insert(member->GetSource()->GetGUID().GetEntry());
-            while (member->hasNext())
+            if (group)
             {
-                member = member->next();
-                members.insert(member->GetSource()->GetGUID().GetEntry());
+                auto member = group->GetFirstMember();
+
+                members.insert(member->GetSource()->GetGUID().GetCounter());
+                while (member->hasNext())
+                {
+                    member = member->next();
+                    members.insert(member->GetSource()->GetGUID().GetCounter());
+                }
             }
 
             return members;
@@ -85,7 +91,7 @@ public:
                 lock.y = field[5].GetFloat();
                 lock.z = field[6].GetFloat();
                 lock.orientation = field[7].GetFloat();
-                lock.map = field[8].GetUInt32();
+                lock.map_id = field[8].GetUInt32();
                 lock.price = field[9].GetUInt32();
                 lock.duration_open = field[10].GetUInt32();
                 lock.duration_owner = field[11].GetUInt32();
@@ -111,13 +117,24 @@ public:
 
         bool Teleport(id_lock_entry const& entry, Player* player)
         {
-            player->TeleportTo(entry.map, entry.x, entry.y, entry.z, entry.orientation);
+            player->TeleportTo(entry.map_id, entry.x, entry.y, entry.z, entry.orientation);
             return false;
         }
 
         bool Buy(Player* player)
         {
             return false;
+        }
+
+        bool Deny(Player* player)
+        {
+            WorldPackets::Chat::ChatServerMessage packet;
+            packet.MessageID = int32(3);
+            packet.StringParam = "You cannot use that.";
+
+            player->SendDirectMessage(packet.Write());
+
+            return true;
         }
 
         bool Act(id_lock_entry const& entry, Player* player)
@@ -141,12 +158,6 @@ public:
             {
                 return Deny(player);
             }
-        }
-
-        bool Deny(Player* player)
-        {
-            player->SendLootError(me->GetGUID(), LootError::LOOT_ERROR_LOCKED);
-            return false;
         }
 
     public:
