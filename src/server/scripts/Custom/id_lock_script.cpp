@@ -8,6 +8,7 @@
 #include "DatabaseEnvFwd.h"
 #include "Log.h"
 #include "WorldPacket.h"
+#include "GameTime.h"
 #include <unordered_set>
 #include <vector>
 
@@ -98,7 +99,8 @@ public:
 
         bool is_expired(id_lock_entry const& entry)
         {
-
+            auto start = time_t(entry.duration_owner);
+            return (start + entry.duration_owner) <= GameTime::GetGameTime();
         }
 
         bool Open(id_lock_entry const& entry)
@@ -115,6 +117,7 @@ public:
 
         bool Buy(Player* player)
         {
+            return false;
         }
 
         bool Act(id_lock_entry const& entry, Player* player)
