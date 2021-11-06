@@ -23,3 +23,4 @@ nbproject/*
 cmake-build-*/
 .vs
 *.user
+/sql/base/TDB_full_world_335.21101_2021_10_15.sql
