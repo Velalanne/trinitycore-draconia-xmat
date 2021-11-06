@@ -66,7 +66,7 @@ public:
         std::vector<gameobject_lock_entry> read_id_lock_entries()
         {
             auto gob_guid = me->GetSpawnId();
-            auto stmt = WorldDatabase.GetPreparedStatement(WORLD_SEL_ID_LOCK);
+            auto stmt = WorldDatabase.GetPreparedStatement(WORLD_SEL_GAMEOBJECT_LOCK);
             stmt->setUInt32(0, gob_guid);
             auto result = WorldDatabase.Query(stmt);
             auto locks = std::vector<gameobject_lock_entry>();
@@ -150,7 +150,7 @@ public:
                 {
                     return Act(lock, player);
                 }
-                else if (members.find(lock.char_entry) != members.end())
+                else if ((is_group & lock.lock_id) && (members.find(lock.char_entry) != members.end()))
                 {
                     return Act(lock, player);
                 }
