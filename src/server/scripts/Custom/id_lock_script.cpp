@@ -171,12 +171,15 @@ public:
         bool OnGossipHello(Player* player) override
         {
             auto members = read_group_members(player);
-            auto guild = player->GetGuildId();
             auto locks = read_id_lock_entries();
 
             for (auto&& lock : locks)
             {
-                if (members.find(lock.char_entry) != members.end())
+                if (!(is_group & lock.lock_id) && (player->GetGuildId() == lock.char_entry))
+                {
+                    return Act(lock, player);
+                }
+                else if (members.find(lock.char_entry) != members.end())
                 {
                     return Act(lock, player);
                 }
