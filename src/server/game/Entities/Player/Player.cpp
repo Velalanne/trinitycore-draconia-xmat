@@ -4992,49 +4992,10 @@ void Player::RepopAtGraveyard()
     // note: this can be called also when the player is alive
     // for example from WorldSession::HandleMovementOpcodes
 
-    AreaTableEntry const* zone = sAreaTableStore.LookupEntry(GetAreaId());
-
-    bool shouldResurrect = false;
-    // Such zones are considered unreachable as a ghost and the player must be automatically revived
-    if ((!IsAlive() && zone && zone->Flags & AREA_FLAG_NEED_FLY) || GetTransport() || GetPositionZ() < GetMap()->GetMinHeight(GetPositionX(), GetPositionY()))
-    {
-        shouldResurrect = true;
-        SpawnCorpseBones();
-    }
-
-    WorldSafeLocsEntry const* ClosestGrave;
-
-    // Special handle for battleground maps
-    if (Battleground* bg = GetBattleground())
-        ClosestGrave = bg->GetClosestGraveyard(this);
-    else
-    {
-        if (Battlefield* bf = sBattlefieldMgr->GetBattlefieldToZoneId(GetZoneId()))
-            ClosestGrave = bf->GetClosestGraveyard(this);
-        else
-            ClosestGrave = sObjectMgr->GetClosestGraveyard(GetPositionX(), GetPositionY(), GetPositionZ(), GetMapId(), GetTeam());
-    }
-
     // stop countdown until repop
     m_deathTimer = 0;
 
-    // if no grave found, stay at the current location
-    // and don't show spirit healer location
-    if (ClosestGrave)
-    {
-        TeleportTo(ClosestGrave->Continent, ClosestGrave->Loc.X, ClosestGrave->Loc.Y, ClosestGrave->Loc.Z, GetOrientation(), shouldResurrect ? TELE_REVIVE_AT_TELEPORT : 0);
-        if (isDead())                                        // not send if alive, because it used in TeleportTo()
-        {
-            WorldPackets::Misc::DeathReleaseLoc packet;
-            packet.MapID = ClosestGrave->Continent;
-            packet.Loc = Position(ClosestGrave->Loc.X, ClosestGrave->Loc.Y, ClosestGrave->Loc.Z);
-            GetSession()->SendPacket(packet.Write());
-        }
-    }
-    else if (GetPositionZ() < GetMap()->GetMinHeight(GetPositionX(), GetPositionY()))
-        TeleportTo(m_homebindMapId, m_homebindX, m_homebindY, m_homebindZ, GetOrientation());
-
-    RemoveFlag(PLAYER_FLAGS, PLAYER_FLAGS_IS_OUT_OF_BOUNDS);
+    ResurrectPlayer(0.5f);
 }
 
 bool Player::CanJoinConstantChannelInZone(ChatChannelsEntry const* channel, AreaTableEntry const* zone) const
