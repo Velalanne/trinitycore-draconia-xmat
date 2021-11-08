@@ -5,6 +5,7 @@
 *                                                                                  *
 ************************************************************************************/
 #include "ScriptMgr.h"
+#include "Player.h"
 
 
 class xray_on_login : public PlayerScript
