@@ -489,7 +489,7 @@ bool Player::Create(ObjectGuid::LowType guidlow, CharacterCreateInfo* createInfo
 
     uint8 powertype = cEntry->DisplayPower;
 
-    SetObjectScale(1.0f);
+    // SetObjectScale(1.0f); xm
 
     SetFactionForRace(createInfo->Race);
 
@@ -17845,6 +17845,32 @@ bool Player::LoadFromDB(ObjectGuid guid, CharacterDatabaseQueryHolder const& hol
     m_achievementMgr->CheckAllAchievementCriteria();
 
     _LoadEquipmentSets(holder.GetPreparedResult(PLAYER_LOGIN_QUERY_LOAD_EQUIPMENT_SETS));
+
+    //xmat start 
+    CharacterDatabasePreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_CHARACTER_MODIFICATION);
+    stmt->setUInt32(0, GetGUID());
+    PreparedQueryResult resultCharMod = CharacterDatabase.Query(stmt);
+    if (resultCharMod)
+    {
+
+        Field* fieldsCharMod  = resultCharMod->Fetch();
+        float scale = fieldsCharMod[0].GetFloat();
+        uint32 morphId = fieldsCharMod[1].GetUInt32();
+        
+        SetObjectScale(scale);
+
+        if(morphId != 0) 
+        {
+            SetDisplayId(morphId);
+            SetNativeDisplayId(morphId);
+        }
+    }
+    else 
+    {
+        SetObjectScale(1.0f);
+    }
+    // xmat ends
+
 
     return true;
 }

@@ -594,6 +594,10 @@ void CharacterDatabaseConnection::DoPrepareStatements()
 
     // DeserterTracker
     PrepareStatement(CHAR_INS_DESERTER_TRACK, "INSERT INTO battleground_deserters (guid, type, datetime) VALUES (?, ?, NOW())", CONNECTION_ASYNC);
+
+    // custom
+    PrepareStatement(CHAR_SEL_CHARACTER_MODIFICATION, "SELECT scale,display_id FROM character_modification WHERE guid = ?", CONNECTION_SYNCH); // xmat
+
 }
 
 CharacterDatabaseConnection::CharacterDatabaseConnection(MySQLConnectionInfo& connInfo) : MySQLConnection(connInfo)
