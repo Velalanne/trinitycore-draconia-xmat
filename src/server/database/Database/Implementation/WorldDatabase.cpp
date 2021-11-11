@@ -97,6 +97,7 @@ void WorldDatabaseConnection::DoPrepareStatements()
     
     // custom
     PrepareStatement(WORLD_SEL_GAMEOBJECT_LOCK, "SELECT id, gob_guid, char_entry, lock_id, x, y, z, orientation, map_id, duration_open FROM gameobject_lock WHERE gob_guid = ?", CONNECTION_SYNCH);
+    PrepareStatement(WORLD_SEL_QUEST_GUILD_INVITE, "SELECT guild_id, rank_id FROM quest_guild_invite WHERE quest_id = ?", CONNECTION_SYNCH);
 
 }
 

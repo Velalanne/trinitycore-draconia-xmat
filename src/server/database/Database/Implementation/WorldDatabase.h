@@ -103,6 +103,7 @@ enum WorldDatabaseStatements : uint32
 
     // custom
     WORLD_SEL_GAMEOBJECT_LOCK,
+    WORLD_SEL_QUEST_GUILD_INVITE,
 
     MAX_WORLDDATABASE_STATEMENTS
 };
