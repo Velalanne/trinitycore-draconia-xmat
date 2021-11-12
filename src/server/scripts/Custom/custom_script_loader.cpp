@@ -18,6 +18,7 @@
 // This is where scripts' loading functions should be declared:
 void AddSC_gameobject_lock_script();
 void AddSC_xray_on_login();
+void AddSC_npc_guild_invite_quest();
 
 // The name of this function should match:
 // void Add${NameOfDirectory}Scripts()
@@ -25,4 +26,5 @@ void AddCustomScripts()
 {
     AddSC_gameobject_lock_script();
     AddSC_xray_on_login();
+    AddSC_npc_guild_invite_quest();
 }

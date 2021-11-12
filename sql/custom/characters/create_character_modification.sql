@@ -1,8 +1,9 @@
 DROP TABLE IF EXISTS `character_modification`;
 
-CREATE TABLE `character_modification` (
-  `guid` mediumint(8) unsigned NOT NULL AUTO_INCREMENT,
-  `scale` FLOAT NOT NULL DEFAULT '0',
-  `display_id` mediumint(8) unsigned NOT NULL DEFAULT 0,
+CREATE TABLE `character_modification`
+(
+	`guid` INT unsigned,
+	`scale` FLOAT DEFAULT 1,
+	`display_id` INT unsigned DEFAULT 0,
   PRIMARY KEY (`guid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
