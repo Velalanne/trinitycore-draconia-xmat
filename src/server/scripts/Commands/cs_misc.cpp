@@ -51,6 +51,7 @@
 #include "WeatherMgr.h"
 #include "World.h"
 #include "WorldSession.h"
+#include "Creature.h"
 
 // temporary hack until includes are sorted out (don't want to pull in Windows.h)
 #ifdef GetClassName
@@ -2668,6 +2669,15 @@ public:
         if (!unit)
             unit = handler->GetSession()->GetPlayer();
 
+        if (unit->IsCreature()) //move creature
+        {
+            auto creature = (Creature*)unit;
+            auto x = creature->GetPositionX();
+            auto y = creature->GetPositionY();
+            auto z = creature->GetPositionZ();
+            auto o = creature->GetOrientation();
+            creature->SetHomePosition(x, y, z, o);
+        }
         unit->RemoveCharmAuras();
 
         return true;
