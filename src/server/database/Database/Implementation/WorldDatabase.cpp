@@ -97,7 +97,10 @@ void WorldDatabaseConnection::DoPrepareStatements()
     
     // custom
     PrepareStatement(WORLD_SEL_GAMEOBJECT_LOCK, "SELECT id, gob_guid, char_entry, lock_id, x, y, z, orientation, map_id, duration_open FROM gameobject_lock WHERE gob_guid = ?", CONNECTION_SYNCH);
-    PrepareStatement(WORLD_SEL_QUEST_GUILD_INVITE, "SELECT guild_id, rank_id FROM quest_guild_invite WHERE quest_id = ?", CONNECTION_SYNCH);
+    
+    PrepareStatement(WORLD_SEL_MANAGED_GUILD_QUEST_INVITE, "SELECT guild_id, rank_id FROM managed_guild WHERE invite_quest_id = ?", CONNECTION_SYNCH);
+    PrepareStatement(WORLD_SEL_MANAGED_GUILD_QUEST_LEAVE,  "SELECT guild_id FROM managed_guild WHERE leave_quest_id = ?", CONNECTION_SYNCH);
+    PrepareStatement(WORLD_SEL_MANAGED_GUILD_DIRECT_LEAVE,  "SELECT faction_id, reset_reputation_value, key_item_entry FROM managed_guild WHERE guild_id = ?", CONNECTION_SYNCH);
 
 }
 

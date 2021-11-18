@@ -2331,6 +2331,21 @@ void Guild::DeleteMember(CharacterDatabaseTransaction trans, ObjectGuid guid, bo
     _DeleteMemberFromDB(trans, lowguid);
     if (!isDisbanding)
         _UpdateAccountsNumber();
+
+    // tcrp custom, check if the guild is a managed one
+    WorldDatabasePreparedStatement* stmt = WorldDatabase.GetPreparedStatement(WORLD_SEL_MANAGED_GUILD_DIRECT_LEAVE);
+    stmt->setUInt32(0, m_id);
+    PreparedQueryResult result = WorldDatabase.Query(stmt);
+    if (result)
+    {
+        Field* fields                = result->Fetch();
+        uint32 factionId             = fields[0].GetUInt32();
+        uint32 resetReputationValue  = fields[1].GetUInt32();
+        uint32 keyItemEntry          = fields[2].GetUInt32();
+        
+        player->AddItem(keyItemEntry, 1);
+        player->SetReputation(factionId, resetReputationValue);
+    }
 }
 
 bool Guild::ChangeMemberRank(CharacterDatabaseTransaction trans, ObjectGuid guid, uint8 newRank)
