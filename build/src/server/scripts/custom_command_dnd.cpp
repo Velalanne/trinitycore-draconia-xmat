@@ -52,7 +52,7 @@ public:
             //{ "melee",   rbac::RBAC_PERM_DND_ROLL_MELEE,  false, &HandleModifyArenaCommand, "" },
             //{ "ranged",  rbac::RBAC_PERM_DND_ROLL_RANGED, false, &HandleModifyArenaCommand, "" },
             //{ "spell",   rbac::RBAC_PERM_DND_ROLL_SPELL,  false, &HandleModifyArenaCommand, "" },
-            //{ "stat",    rbac::RBAC_PERM_DND_ROLL_STAT,   false, &HandleModifyArenaCommand, "" },
+            //{ "stat",    rbac::RBAC_PERM_DND_ROLL_STAT,   false, &HandleDndRollStatCommand, "" },
             { "dice",    rbac::RBAC_PERM_DND_ROLL_DICE,   false, &HandleDndRollDiceCommand, "" },
         };
         static std::vector<ChatCommand> dndCommandTable =
@@ -66,7 +66,7 @@ public:
         return commandTable;
     }
 
-    static std::size_t FindFirstNotWhitespace(std::string& const text, std::size_t start)
+    static std::size_t FindFirstNotWhitespace(std::string const& text, std::size_t start)
     {
         while ((text.size() > start) && std::isspace(text[start]))
         {
@@ -75,7 +75,7 @@ public:
         return start;
     }
 
-    static std::pair<std::string, std::size_t> SplitByWhitespace(std::string& const text, std::size_t start)
+    static std::pair<std::string, std::size_t> SplitByWhitespace(std::string const& text, std::size_t start)
     {
         for (std::size_t i = start; i < text.size(); ++i)
         {
@@ -90,7 +90,7 @@ public:
         return std::pair(result, text.size());
     }
 
-    static std::pair<int, int> ParseDiceDescription(std::string& const dice)
+    static std::pair<int, int> ParseDiceDescription(std::string const& dice)
     {
         auto d_position = dice.find_first_of('d');
         auto dices_str = dice.substr(0, d_position - 1);
