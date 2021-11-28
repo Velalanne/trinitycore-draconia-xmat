@@ -173,7 +173,7 @@ private:
 
     static std::unique_ptr<dnd_character> GetCharacter(uint32 character_id)
     {
-        //TOD
+        //TODO
     }
 
     static std::unique_ptr<dnd_race> GetRace(uint32 dnd_race_id)
@@ -224,14 +224,70 @@ private:
         return result;
     }
 
+    static std::unique_ptr<dnd_bonus_table> Calculate(std::unique_ptr<dnd_proficiency>&& proficiency, std::unique_ptr<dnd_race>&& race, std::vector<std::unique_ptr<dnd_item>> items)
+    {
+        auto table = std::make_unique<dnd_bonus_table>();
+        uint32 melee_hit    = 0;
+        uint32 ranged_hit   = 0;
+        uint32 spell_hit    = 0;
+        uint32 strength     = 0;
+        uint32 dexterity    = 0;
+        uint32 constitution = 0;
+        uint32 intelligence = 0;
+        uint32 wisdom       = 0;
+
+        for (auto&& item : items)
+        {
+            melee_hit += item->melee_hit;
+            ranged_hit += item->ranged_hit;
+            spell_hit += item->spell_hit;
+            strength += item->strength;
+            dexterity += item->dexterity;
+            constitution += item->constitution;
+            intelligence += item->intelligence;
+            wisdom += item->wisdom;
+        }
+
+        strength += race->strength;
+        dexterity += race->dexterity;
+        constitution += race->constitution;
+        intelligence += race->intelligence;
+        wisdom += race->wisdom;
+
+        table->melee_hit    = melee_hit;
+        table->ranged_hit   = ranged_hit;
+        table->spell_hit    = spell_hit;
+        table->strength     = std::make_pair(strength, proficiency->strength);
+        table->dexterity    = std::make_pair(dexterity, proficiency->dexterity);
+        table->constitution = std::make_pair(constitution, proficiency->constitution);
+        table->intelligence = std::make_pair(intelligence, proficiency->intelligence);
+        table->wisdom       = std::make_pair(wisdom, proficiency->wisdom);
+
+        return table;
+    }
+
     static std::unique_ptr<dnd_bonus_table> GetBonusTable(Player* player)
     {
         auto character = GetCharacter(player->GetGUID().GetCounter());
-        auto race = GetRace(character->race_id);
-        auto proficiency = GetProficiency(character->class_id, character->level);
-        auto items = GetItems(player);
+        if (character == nullptr)
+        {
+            return nullptr;
+        }
 
-        //TODO
+        auto race = GetRace(character->race_id);
+        if (race == nullptr)
+        {
+            return nullptr;
+        }
+
+        auto proficiency = GetProficiency(character->class_id, character->level);
+        if (proficiency == nullptr)
+        {
+            return nullptr;
+        }
+
+        auto items = GetItems(player);
+        return Calculate(std::move(proficiency), std::move(race), items);
     }
 
     static bool HandleDndRollStatCommand(ChatHandler* handler, char const* args)
@@ -239,6 +295,10 @@ private:
         auto player = handler->GetSession()->GetPlayer();
         auto table = GetBonusTable(player);
 
+        if (table == nullptr)
+        {
+            //TODO
+        }
         //TODO
     }
 };
