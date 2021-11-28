@@ -1,27 +1,3 @@
-/*
- * This file is part of the TrinityCore Project. See AUTHORS file for Copyright information
- *
- * This program is free software; you can redistribute it and/or modify it
- * under the terms of the GNU General Public License as published by the
- * Free Software Foundation; either version 2 of the License, or (at your
- * option) any later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
- * more details.
- *
- * You should have received a copy of the GNU General Public License along
- * with this program. If not, see <http://www.gnu.org/licenses/>.
- */
-
- /* ScriptData
- Name: modify_commandscript
- %Complete: 100
- Comment: All modify related commands
- Category: commandscripts
- EndScriptData */
-
 #include "ScriptMgr.h"
 #include "Chat.h"
 #include "DBCStores.h"
@@ -33,12 +9,76 @@
 #include "RBAC.h"
 #include "ReputationMgr.h"
 #include "WorldSession.h"
-#include <tuple>;
-#include <vector>;
+#include "Item.h"
+#include <tuple>
+#include <vector>
+#include <memory>
 
 #if TRINITY_COMPILER == TRINITY_COMPILER_GNU
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 #endif
+
+struct dnd_proficiency
+{
+    uint32 id;
+    uint32 class_id;
+    uint32 level;
+    uint32 strength;
+    uint32 dexterity;
+    uint32 constitution;
+    uint32 intelligence;
+    uint32 wisdom;
+};
+
+struct dnd_class
+{
+    uint32 id;
+    std::string name;
+};
+
+struct dnd_race
+{
+    uint32 id;
+    std::string name;
+    uint32 strength;
+    uint32 dexterity;
+    uint32 constitution;
+    uint32 intelligence;
+    uint32 wisdom;
+};
+
+struct dnd_item
+{
+    uint32 id;
+    uint32 melee_hit;
+    uint32 ranged_hit;
+    uint32 spell_hit;
+    uint32 strength;
+    uint32 dexterity;
+    uint32 constitution;
+    uint32 intelligence;
+    uint32 wisdom;
+};
+
+struct dnd_character
+{
+    uint32 id;
+    uint32 race_id;
+    uint32 class_id;
+    uint32 level;
+};
+
+struct dnd_bonus_table
+{
+    uint32 melee_hit;
+    uint32 ranged_hit;
+    uint32 spell_hit;
+    std::pair<uint32, uint32> strength; //stat, prof
+    std::pair<uint32, uint32> dexterity; //stat, prof
+    std::pair<uint32, uint32> constitution; //stat, prof
+    std::pair<uint32, uint32> intelligence; //stat, prof
+    std::pair<uint32, uint32> wisdom; //stat, prof
+};
 
 class dnd_commandscript : public CommandScript
 {
@@ -52,7 +92,7 @@ public:
             //{ "melee",   rbac::RBAC_PERM_DND_ROLL_MELEE,  false, &HandleModifyArenaCommand, "" },
             //{ "ranged",  rbac::RBAC_PERM_DND_ROLL_RANGED, false, &HandleModifyArenaCommand, "" },
             //{ "spell",   rbac::RBAC_PERM_DND_ROLL_SPELL,  false, &HandleModifyArenaCommand, "" },
-            //{ "stat",    rbac::RBAC_PERM_DND_ROLL_STAT,   false, &HandleDndRollStatCommand, "" },
+            { "stat",    rbac::RBAC_PERM_DND_ROLL_STAT,   false, &HandleDndRollStatCommand, "" },
             { "dice",    rbac::RBAC_PERM_DND_ROLL_DICE,   false, &HandleDndRollDiceCommand, "" },
         };
         static std::vector<ChatCommand> dndCommandTable =
@@ -65,6 +105,8 @@ public:
         };
         return commandTable;
     }
+
+private:
 
     static std::size_t FindFirstNotWhitespace(std::string const& text, std::size_t start)
     {
@@ -127,6 +169,77 @@ public:
 
         handler->PSendSysMessage(LANG_COMMAND_DND_ROLL_DICE, handler->GetNameLink(player).c_str(), result, bonus);
         return true;
+    }
+
+    static std::unique_ptr<dnd_character> GetCharacter(uint32 character_id)
+    {
+        //TOD
+    }
+
+    static std::unique_ptr<dnd_race> GetRace(uint32 dnd_race_id)
+    {
+        //TODO
+    }
+
+    static std::unique_ptr<dnd_proficiency> GetProficiency(uint32 dnd_class_id, uint32 dnd_level)
+    {
+        //TODO
+    }
+
+    static std::vector<Item*> EquippedItems(Player* player)
+    {
+        auto result = std::vector<Item*>();
+
+        for (auto i = (uint16)EQUIPMENT_SLOT_START; i <= (uint16)EQUIPMENT_SLOT_END; ++i)
+        {
+            auto item = player->GetItemByPos(i);
+            if (item != nullptr)
+            {
+                result.push_back(item);
+            }
+        }
+
+        return result;
+    }
+
+    static std::unique_ptr<dnd_item> GetItem(uint32 item_id)
+    {
+        //TODO
+    }
+
+    static std::vector<std::unique_ptr<dnd_item>> GetItems(Player* player)
+    {
+        auto result = std::vector<std::unique_ptr<dnd_item>>();
+        auto items = EquippedItems(player);
+
+        for (auto&& item : items)
+        {
+            auto dnd = GetItem(item->GetGUID().GetCounter());
+            if (dnd != nullptr)
+            {
+                result.push_back(std::move(dnd));
+            }
+        }
+
+        return result;
+    }
+
+    static std::unique_ptr<dnd_bonus_table> GetBonusTable(Player* player)
+    {
+        auto character = GetCharacter(player->GetGUID().GetCounter());
+        auto race = GetRace(character->race_id);
+        auto proficiency = GetProficiency(character->class_id, character->level);
+        auto items = GetItems(player);
+
+        //TODO
+    }
+
+    static bool HandleDndRollStatCommand(ChatHandler* handler, char const* args)
+    {
+        auto player = handler->GetSession()->GetPlayer();
+        auto table = GetBonusTable(player);
+
+        //TODO
     }
 };
 
