@@ -30,6 +30,7 @@ struct dnd_proficiency
     uint32 constitution;
     uint32 intelligence;
     uint32 wisdom;
+    uint32 charisma;
 };
 
 struct dnd_class
@@ -47,6 +48,7 @@ struct dnd_race
     uint32 constitution;
     uint32 intelligence;
     uint32 wisdom;
+    uint32 charisma;
 };
 
 struct dnd_item
@@ -60,6 +62,7 @@ struct dnd_item
     uint32 constitution;
     uint32 intelligence;
     uint32 wisdom;
+    uint32 charisma;
 };
 
 struct dnd_character
@@ -80,12 +83,31 @@ struct dnd_bonus_table
     std::pair<uint32, uint32> constitution; //stat, prof
     std::pair<uint32, uint32> intelligence; //stat, prof
     std::pair<uint32, uint32> wisdom; //stat, prof
+    std::pair<uint32, uint32> charisma;
 };
 
 class dnd_commandscript : public CommandScript
 {
+private:
+    enum class Stat : char { Strength, Dexterity, Constitution, Intelligence, Wisdom, Charisma, Nothing };
+
+    std::unordered_set<std::string> strength;
+    std::unordered_set<std::string> dexterity;
+    std::unordered_set<std::string> constitution;
+    std::unordered_set<std::string> intelligence;
+    std::unordered_set<std::string> wisdom;
+    std::unordered_set<std::string> charisma;
+
 public:
-    dnd_commandscript() : CommandScript("dnd_commandscript") { }
+    dnd_commandscript() : CommandScript("dnd_commandscript")
+    {
+        strength = std::unordered_set<std::string>{ "str", "strength" };
+        dexterity = std::unordered_set<std::string>{ "dex", "dexterity" };
+        constitution = std::unordered_set<std::string>{ "con", "constitution" };
+        intelligence = std::unordered_set<std::string>{ "int", "intelligence" };
+        wisdom = std::unordered_set<std::string>{ "wis", "wisdom" };
+        charisma = std::unordered_set<std::string>{ "cha", "char", "charisma" };
+    }
 
     std::vector<ChatCommand> GetCommands() const override
     {
@@ -223,6 +245,7 @@ private:
             race->constitution = field[4].GetUInt32();
             race->intelligence = field[5].GetUInt32();
             race->wisdom = field[6].GetUInt32();
+            race->charisma = field[7].GetUInt32();
             return race;
 
         } while (result->NextRow());
@@ -254,6 +277,7 @@ private:
             proficiency->constitution = field[5].GetUInt32();
             proficiency->intelligence = field[6].GetUInt32();
             proficiency->wisdom = field[7].GetUInt32();
+            proficiency->charisma = field[8].GetUInt32();
 
             if (proficiency->level == dnd_level)
             {
@@ -306,6 +330,7 @@ private:
             item->constitution = field[6].GetUInt32();
             item->intelligence = field[7].GetUInt32();
             item->wisdom = field[8].GetUInt32();
+            item->charisma = field[9].GetUInt32();
 
             return item;
 
@@ -342,6 +367,7 @@ private:
         uint32 constitution = 0;
         uint32 intelligence = 0;
         uint32 wisdom       = 0;
+        uint32 charisma     = 0;
 
         for (auto&& item : items)
         {
@@ -353,6 +379,7 @@ private:
             constitution += item->constitution;
             intelligence += item->intelligence;
             wisdom += item->wisdom;
+            charisma += item->charisma;
         }
 
         strength += race->strength;
@@ -360,6 +387,7 @@ private:
         constitution += race->constitution;
         intelligence += race->intelligence;
         wisdom += race->wisdom;
+        charisma += race->charisma;
 
         table->melee_hit    = melee_hit;
         table->ranged_hit   = ranged_hit;
@@ -369,6 +397,7 @@ private:
         table->constitution = std::make_pair(constitution, proficiency->constitution);
         table->intelligence = std::make_pair(intelligence, proficiency->intelligence);
         table->wisdom       = std::make_pair(wisdom, proficiency->wisdom);
+        table->charisma     = std::make_pair(charisma, proficiency->charisma);
 
         return table;
     }
@@ -395,6 +424,11 @@ private:
 
         auto items = GetItems(player);
         return Calculate(std::move(proficiency), std::move(race), std::move(items));
+    }
+
+    static Stats ParseStat(std::string const& stat)
+    {
+        
     }
 
     static bool HandleDndRollStatCommand(ChatHandler* handler, char const* args)

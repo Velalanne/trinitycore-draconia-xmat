@@ -102,9 +102,9 @@ void WorldDatabaseConnection::DoPrepareStatements()
     PrepareStatement(WORLD_SEL_MANAGED_GUILD_QUEST_LEAVE,  "SELECT guild_id FROM managed_guild WHERE leave_quest_id = ?", CONNECTION_SYNCH);
     PrepareStatement(WORLD_SEL_MANAGED_GUILD_DIRECT_LEAVE,  "SELECT faction_id, reset_reputation_value, key_item_entry FROM managed_guild WHERE guild_id = ?", CONNECTION_SYNCH);
 
-    PrepareStatement(WORLD_SEL_DND_PROFICIENCY, "SELECT id, class_id, level, strength, dexterity, constitution, intelligence, wisdom FROM dnd_race WHERE id = ?", CONNECTION_SYNCH);
-    PrepareStatement(WORLD_SEL_DND_RACE, "SELECT id, strength, dexterity, constitution, intelligence, wisdom FROM dnd_race WHERE id = ?", CONNECTION_SYNCH);
-    PrepareStatement(WORLD_SEL_DND_ITEM, "SELECT id, melee_hit, ranged_hit, spell_hit, strength, dexterity, constitution, intelligence, wisdom FROM dnd_item WHERE id = ?", CONNECTION_SYNCH);
+    PrepareStatement(WORLD_SEL_DND_PROFICIENCY, "SELECT id, class_id, level, strength, dexterity, constitution, intelligence, wisdom, charisma FROM dnd_race WHERE id = ?", CONNECTION_SYNCH);
+    PrepareStatement(WORLD_SEL_DND_RACE, "SELECT id, strength, dexterity, constitution, intelligence, wisdom, charisma FROM dnd_race WHERE id = ?", CONNECTION_SYNCH);
+    PrepareStatement(WORLD_SEL_DND_ITEM, "SELECT id, melee_hit, ranged_hit, spell_hit, strength, dexterity, constitution, intelligence, wisdom, charisma FROM dnd_item WHERE id = ?", CONNECTION_SYNCH);
 }
 
 WorldDatabaseConnection::WorldDatabaseConnection(MySQLConnectionInfo& connInfo) : MySQLConnection(connInfo)
