@@ -588,12 +588,12 @@ private:
         }
 
         auto rolled = irand(1, 20);
-        auto hit = GetHit(*table, hit);
+        auto hit_bonus = GetHit(*table, hit);
         auto values = XMod(GetStatAndProf(std::move(table), stat));
         auto total = rolled + values.first;
         auto stat_print = PrintStat(stat);
 
-        handler->PSendSysMessage(LANG_COMMAND_DND_ROLL_STAT, handler->GetNameLink(player).c_str(), stat_print, total, rolled, values.first, values.second, hit);
+        handler->PSendSysMessage(LANG_COMMAND_DND_ROLL_STAT, handler->GetNameLink(player).c_str(), stat_print, total, rolled, values.first, values.second, hit_bonus);
         return true;
     }
 
