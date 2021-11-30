@@ -15,6 +15,7 @@
 #include <tuple>
 #include <vector>
 #include <memory>
+#include <stdexcept>
 
 #if TRINITY_COMPILER == TRINITY_COMPILER_GNU
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
@@ -25,12 +26,12 @@ struct dnd_proficiency
     uint32 id;
     uint32 class_id;
     uint32 level;
-    uint32 strength;
-    uint32 dexterity;
-    uint32 constitution;
-    uint32 intelligence;
-    uint32 wisdom;
-    uint32 charisma;
+    int32 strength;
+    int32 dexterity;
+    int32 constitution;
+    int32 intelligence;
+    int32 wisdom;
+    int32 charisma;
 };
 
 struct dnd_class
@@ -43,26 +44,26 @@ struct dnd_race
 {
     uint32 id;
     std::string name;
-    uint32 strength;
-    uint32 dexterity;
-    uint32 constitution;
-    uint32 intelligence;
-    uint32 wisdom;
-    uint32 charisma;
+    int32 strength;
+    int32 dexterity;
+    int32 constitution;
+    int32 intelligence;
+    int32 wisdom;
+    int32 charisma;
 };
 
 struct dnd_item
 {
     uint32 id;
-    uint32 melee_hit;
-    uint32 ranged_hit;
-    uint32 spell_hit;
-    uint32 strength;
-    uint32 dexterity;
-    uint32 constitution;
-    uint32 intelligence;
-    uint32 wisdom;
-    uint32 charisma;
+    int32 melee_hit;
+    int32 ranged_hit;
+    int32 spell_hit;
+    int32 strength;
+    int32 dexterity;
+    int32 constitution;
+    int32 intelligence;
+    int32 wisdom;
+    int32 charisma;
 };
 
 struct dnd_character
@@ -75,28 +76,29 @@ struct dnd_character
 
 struct dnd_bonus_table
 {
-    uint32 melee_hit;
-    uint32 ranged_hit;
-    uint32 spell_hit;
-    std::pair<uint32, uint32> strength; //stat, prof
-    std::pair<uint32, uint32> dexterity; //stat, prof
-    std::pair<uint32, uint32> constitution; //stat, prof
-    std::pair<uint32, uint32> intelligence; //stat, prof
-    std::pair<uint32, uint32> wisdom; //stat, prof
-    std::pair<uint32, uint32> charisma;
+    int32 melee_hit;
+    int32 ranged_hit;
+    int32 spell_hit;
+    std::pair<int32, int32> strength; //stat, prof
+    std::pair<int32, int32> dexterity; //stat, prof
+    std::pair<int32, int32> constitution; //stat, prof
+    std::pair<int32, int32> intelligence; //stat, prof
+    std::pair<int32, int32> wisdom; //stat, prof
+    std::pair<int32, int32> charisma;
 };
 
 class dnd_commandscript : public CommandScript
 {
 private:
+    enum class Hit : char {Melee, Ranged, Spell};
     enum class Stat : char { Strength, Dexterity, Constitution, Intelligence, Wisdom, Charisma, Nothing };
 
-    std::unordered_set<std::string> strength;
-    std::unordered_set<std::string> dexterity;
-    std::unordered_set<std::string> constitution;
-    std::unordered_set<std::string> intelligence;
-    std::unordered_set<std::string> wisdom;
-    std::unordered_set<std::string> charisma;
+    static std::unordered_set<std::string> strength;
+    static std::unordered_set<std::string> dexterity;
+    static std::unordered_set<std::string> constitution;
+    static std::unordered_set<std::string> intelligence;
+    static std::unordered_set<std::string> wisdom;
+    static std::unordered_set<std::string> charisma;
 
 public:
     dnd_commandscript() : CommandScript("dnd_commandscript")
@@ -113,9 +115,9 @@ public:
     {
         static std::vector<ChatCommand> dndRollCommandTable =
         {
-            //{ "melee",   rbac::RBAC_PERM_DND_ROLL_MELEE,  false, &HandleModifyArenaCommand, "" },
-            //{ "ranged",  rbac::RBAC_PERM_DND_ROLL_RANGED, false, &HandleModifyArenaCommand, "" },
-            //{ "spell",   rbac::RBAC_PERM_DND_ROLL_SPELL,  false, &HandleModifyArenaCommand, "" },
+            { "melee",   rbac::RBAC_PERM_DND_ROLL_MELEE,  false, &HandleDndRollMeleeCommand, "" },
+            { "ranged",  rbac::RBAC_PERM_DND_ROLL_RANGED, false, &HandleDndRollRangedCommand, "" },
+            { "spell",   rbac::RBAC_PERM_DND_ROLL_SPELL,  false, &HandleDndRollSpellCommand, "" },
             { "stat",    rbac::RBAC_PERM_DND_ROLL_STAT,   false, &HandleDndRollStatCommand, "" },
             { "dice",    rbac::RBAC_PERM_DND_ROLL_DICE,   false, &HandleDndRollDiceCommand, "" },
         };
@@ -426,19 +428,82 @@ private:
         return Calculate(std::move(proficiency), std::move(race), std::move(items));
     }
 
-    static Stats ParseStat(std::string const& stat)
+    static Stat ParseStat(std::string&& stat)
     {
-        //TODO
+        if (strength.find(stat) != strength.end())
+        {
+            return dnd_commandscript::Stat::Strength;
+        }
+        else if (dexterity.find(stat) != dexterity.end())
+        {
+            return dnd_commandscript::Stat::Dexterity;
+        }
+        else if (constitution.find(stat) != constitution.end())
+        {
+            return dnd_commandscript::Stat::Constitution;
+        }
+        else if (intelligence.find(stat) != intelligence.end())
+        {
+            return dnd_commandscript::Stat::Intelligence;
+        }
+        else if (wisdom.find(stat) != wisdom.end())
+        {
+            return dnd_commandscript::Stat::Wisdom;
+        }
+        else if (charisma.find(stat) != charisma.end())
+        {
+            return dnd_commandscript::Stat::Charisma;
+        }
+        else
+        {
+            return dnd_commandscript::Stat::Nothing;
+        }
     }
 
-    static std::pair<uint32, uint32> GetStatAndProf(std::unique_ptr<dnd_bonus_table> table)
+    static std::pair<int32, int32> GetStatAndProf(std::unique_ptr<dnd_bonus_table> table, Stat stat)
     {
-        //TODO
+        switch (stat)
+        {
+        case dnd_commandscript::Stat::Strength:
+            return table->strength;
+        case dnd_commandscript::Stat::Dexterity:
+            return table->dexterity;
+        case dnd_commandscript::Stat::Constitution:
+            return table->constitution;
+        case dnd_commandscript::Stat::Intelligence:
+            return table->intelligence;
+        case dnd_commandscript::Stat::Wisdom:
+            return table->wisdom;
+        case dnd_commandscript::Stat::Charisma:
+            return table->charisma;
+        case dnd_commandscript::Stat::Nothing:
+            return std::make_pair(0, 0);
+        default:
+            return std::make_pair(0, 0);
+        }
     }
 
-    static std::string PrintStat(Stats stat)
+    static std::string PrintStat(Stat stat)
     {
-        //TODO
+        switch (stat)
+        {
+        case dnd_commandscript::Stat::Strength:
+            return "strength";
+        case dnd_commandscript::Stat::Dexterity:
+            return "dexterity";
+        case dnd_commandscript::Stat::Constitution:
+            return "sconstitution";
+        case dnd_commandscript::Stat::Intelligence:
+            return "intelligence";
+        case dnd_commandscript::Stat::Wisdom:
+            return "wisdom";
+        case dnd_commandscript::Stat::Charisma:
+            return "charisma";
+        case dnd_commandscript::Stat::Nothing:
+            return "nothing";
+        default:
+            return "nothing";
+        }
     }
 
     static std::string ToLower(std::string&& text)
@@ -451,6 +516,11 @@ private:
         }
 
         return result;
+    }
+
+    static std::pair<int32, int32> XMod(std::pair<int32, int32>&& statAndProf)
+    {
+        return std::make_pair((statAndProf.first - 10) / 2, std::move(statAndProf.second));
     }
 
     static bool HandleDndRollStatCommand(ChatHandler* handler, char const* args)
@@ -466,13 +536,80 @@ private:
         }
 
         auto stat = ParseStat(ToLower(std::string(args)));
+        if (stat == dnd_commandscript::Stat::Nothing)
+        {
+            handler->PSendSysMessage(LANG_COMMAND_DND_ROLL_STAT_ERROR);
+            handler->SetSentErrorMessage(true);
+            return false;
+        }
+
         auto rolled = irand(1, 20);
-        auto values = GetStatAndProf(std::move(table));
+        auto values = XMod(GetStatAndProf(std::move(table), stat));
         auto total = rolled + values.first;
         auto stat_print = PrintStat(stat);
 
         handler->PSendSysMessage(LANG_COMMAND_DND_ROLL_STAT, handler->GetNameLink(player).c_str(), stat_print, total, rolled, values.first, values.second);
         return true;
+    }
+
+    static int32 GetHit(dnd_bonus_table const& table, Hit hit)
+    {
+        switch (hit)
+        {
+        case dnd_commandscript::Hit::Melee:
+            return table.melee_hit;
+        case dnd_commandscript::Hit::Ranged:
+            return table.ranged_hit;
+        case dnd_commandscript::Hit::Spell:
+            return table.spell_hit;
+        default:
+            throw new std::logic_error("Using dnd_commandscript::Hit that was not implemented.");
+        }
+    }
+
+    static bool HandleDndRollHitCommand(ChatHandler* handler, char const* args, Hit hit)
+    {
+        auto player = handler->GetSession()->GetPlayer();
+        auto table = GetBonusTable(player);
+
+        if (table == nullptr)
+        {
+            handler->PSendSysMessage(LANG_COMMAND_DND_ROLL_STAT_ERROR);
+            handler->SetSentErrorMessage(true);
+            return false;
+        }
+
+        auto stat = ParseStat(ToLower(std::string(args)));
+        if (stat == dnd_commandscript::Stat::Nothing)
+        {
+            handler->PSendSysMessage(LANG_COMMAND_DND_ROLL_STAT_ERROR);
+            handler->SetSentErrorMessage(true);
+            return false;
+        }
+
+        auto rolled = irand(1, 20);
+        auto hit = GetHit(*table, hit);
+        auto values = XMod(GetStatAndProf(std::move(table), stat));
+        auto total = rolled + values.first;
+        auto stat_print = PrintStat(stat);
+
+        handler->PSendSysMessage(LANG_COMMAND_DND_ROLL_STAT, handler->GetNameLink(player).c_str(), stat_print, total, rolled, values.first, values.second, hit);
+        return true;
+    }
+
+    static bool HandleDndRollMeleeCommand(ChatHandler* handler, char const* args)
+    {
+        return HandleDndRollHitCommand(handler, args, Hit::Melee);
+    }
+
+    static bool HandleDndRollRangedCommand(ChatHandler* handler, char const* args)
+    {
+        return HandleDndRollHitCommand(handler, args, Hit::Ranged);
+    }
+
+    static bool HandleDndRollSpellCommand(ChatHandler* handler, char const* args)
+    {
+        return HandleDndRollHitCommand(handler, args, Hit::Spell);
     }
 };
 
