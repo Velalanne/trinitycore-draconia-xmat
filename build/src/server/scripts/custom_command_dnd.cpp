@@ -101,12 +101,12 @@ private:
 public:
     dnd_commandscript() : CommandScript("dnd_commandscript")
     {
-        strength = std::unordered_set<std::string>{ "str", "strength" };
-        dexterity = std::unordered_set<std::string>{ "dex", "dexterity" };
-        constitution = std::unordered_set<std::string>{ "con", "constitution" };
-        intelligence = std::unordered_set<std::string>{ "int", "intelligence" };
-        wisdom = std::unordered_set<std::string>{ "wis", "wisdom" };
-        charisma = std::unordered_set<std::string>{ "cha", "char", "charisma" };
+        strength = std::unordered_set<std::string>{ "s", "str", "strength" };
+        dexterity = std::unordered_set<std::string>{ "d", "dex", "dexterity" };
+        constitution = std::unordered_set<std::string>{ "co", "con", "constitution" };
+        intelligence = std::unordered_set<std::string>{ "i", "int", "intelligence" };
+        wisdom = std::unordered_set<std::string>{ "w", "wis", "wisdom" };
+        charisma = std::unordered_set<std::string>{ "ch", "cha", "char", "charisma" };
     }
 
     std::vector<ChatCommand> GetCommands() const override
@@ -428,7 +428,29 @@ private:
 
     static Stats ParseStat(std::string const& stat)
     {
-        
+        //TODO
+    }
+
+    static std::pair<uint32, uint32> GetStatAndProf(std::unique_ptr<dnd_bonus_table> table)
+    {
+        //TODO
+    }
+
+    static std::string PrintStat(Stats stat)
+    {
+        //TODO
+    }
+
+    static std::string ToLower(std::string&& text)
+    {
+        auto result = std::string();
+
+        for (auto&& item : text)
+        {
+            result.push_back(std::tolower(item));
+        }
+
+        return result;
     }
 
     static bool HandleDndRollStatCommand(ChatHandler* handler, char const* args)
@@ -443,12 +465,13 @@ private:
             return false;
         }
 
-        //get stat
+        auto stat = ParseStat(ToLower(std::string(args)));
         auto rolled = irand(1, 20);
-        //get bonus
-        //get prof
+        auto values = GetStatAndProf(std::move(table));
+        auto total = rolled + values.first;
+        auto stat_print = PrintStat(stat);
 
-        handler->PSendSysMessage(LANG_COMMAND_DND_ROLL_STAT, handler->GetNameLink(player).c_str());
+        handler->PSendSysMessage(LANG_COMMAND_DND_ROLL_STAT, handler->GetNameLink(player).c_str(), stat_print, total, rolled, values.first, values.second);
         return true;
     }
 };
