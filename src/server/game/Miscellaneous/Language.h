@@ -1216,5 +1216,7 @@ enum TrinityStrings
     LANG_SHUTDOWN_DELAYED                         = 11017,
     LANG_SHUTDOWN_CANCELLED                       = 11018,
     LANG_COMMAND_DND_ROLL_DICE                    = 11019,
+    LANG_COMMAND_DND_ROLL_STAT                    = 11020,
+    LANG_COMMAND_DND_ROLL_STAT_ERROR              = 11021
 };
 #endif

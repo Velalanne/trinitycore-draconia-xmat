@@ -404,9 +404,18 @@ private:
 
         if (table == nullptr)
         {
-            //TODO
+            handler->PSendSysMessage(LANG_COMMAND_DND_ROLL_STAT_ERROR);
+            handler->SetSentErrorMessage(true);
+            return false;
         }
-        //TODO
+
+        //get stat
+        auto rolled = irand(1, 20);
+        //get bonus
+        //get prof
+
+        handler->PSendSysMessage(LANG_COMMAND_DND_ROLL_STAT, handler->GetNameLink(player).c_str());
+        return true;
     }
 };
 
