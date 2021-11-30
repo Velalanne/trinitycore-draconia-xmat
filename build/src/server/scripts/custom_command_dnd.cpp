@@ -10,6 +10,8 @@
 #include "ReputationMgr.h"
 #include "WorldSession.h"
 #include "Item.h"
+#include "DatabaseEnv.h"
+#include "DatabaseEnvFwd.h"
 #include <tuple>
 #include <vector>
 #include <memory>
@@ -173,17 +175,94 @@ private:
 
     static std::unique_ptr<dnd_character> GetCharacter(uint32 character_id)
     {
-        //TODO
+        auto stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_DND_CHARACTER);
+        stmt->setUInt32(0, character_id);
+        auto result = CharacterDatabase.Query(stmt);
+
+        if (!result)
+        {
+            return nullptr;
+        }
+
+        do
+        {
+            auto field = result->Fetch();
+
+            auto character = std::make_unique<dnd_character>();
+            character->id = field[0].GetUInt32();
+            character->race_id = field[1].GetUInt32();
+            character->class_id = field[2].GetUInt32();
+            character->level = field[3].GetUInt32();
+            return character;
+
+        } while (result->NextRow());
+
+        return nullptr;
     }
 
     static std::unique_ptr<dnd_race> GetRace(uint32 dnd_race_id)
     {
-        //TODO
+        auto stmt = WorldDatabase.GetPreparedStatement(WORLD_SEL_DND_RACE);
+        stmt->setUInt32(0, dnd_race_id);
+        auto result = WorldDatabase.Query(stmt);
+
+        if (!result)
+        {
+            return nullptr;
+        }
+
+        do
+        {
+            auto field = result->Fetch();
+
+            auto race = std::make_unique<dnd_race>();
+            race->id = field[0].GetUInt32();
+            race->name = field[1].GetString();
+            race->strength = field[2].GetUInt32();
+            race->dexterity = field[3].GetUInt32();
+            race->constitution = field[4].GetUInt32();
+            race->intelligence = field[5].GetUInt32();
+            race->wisdom = field[6].GetUInt32();
+            return race;
+
+        } while (result->NextRow());
+
+        return nullptr;
     }
 
     static std::unique_ptr<dnd_proficiency> GetProficiency(uint32 dnd_class_id, uint32 dnd_level)
     {
-        //TODO
+        auto stmt = WorldDatabase.GetPreparedStatement(WORLD_SEL_DND_PROFICIENCY);
+        stmt->setUInt32(0, dnd_class_id);
+        auto result = WorldDatabase.Query(stmt);
+
+        if (!result)
+        {
+            return nullptr;
+        }
+
+        do
+        {
+            auto field = result->Fetch();
+
+            auto proficiency = std::make_unique<dnd_proficiency>();
+            proficiency->id = field[0].GetUInt32();
+            proficiency->class_id = field[1].GetUInt32();
+            proficiency->level = field[2].GetUInt32();
+            proficiency->strength = field[3].GetUInt32();
+            proficiency->dexterity = field[4].GetUInt32();
+            proficiency->constitution = field[5].GetUInt32();
+            proficiency->intelligence = field[6].GetUInt32();
+            proficiency->wisdom = field[7].GetUInt32();
+
+            if (proficiency->level == dnd_level)
+            {
+                return proficiency;
+            }
+
+        } while (result->NextRow());
+
+        return nullptr;
     }
 
     static std::vector<Item*> EquippedItems(Player* player)
@@ -204,7 +283,35 @@ private:
 
     static std::unique_ptr<dnd_item> GetItem(uint32 item_id)
     {
-        //TODO
+        auto stmt = WorldDatabase.GetPreparedStatement(WORLD_SEL_DND_ITEM);
+        stmt->setUInt32(0, item_id);
+        auto result = WorldDatabase.Query(stmt);
+
+        if (!result)
+        {
+            return nullptr;
+        }
+
+        do
+        {
+            auto field = result->Fetch();
+
+            auto item = std::make_unique<dnd_item>();
+            item->id = field[0].GetUInt32();
+            item->melee_hit = field[1].GetUInt32();
+            item->ranged_hit = field[2].GetUInt32();
+            item->spell_hit = field[3].GetUInt32();
+            item->strength = field[4].GetUInt32();
+            item->dexterity = field[5].GetUInt32();
+            item->constitution = field[6].GetUInt32();
+            item->intelligence = field[7].GetUInt32();
+            item->wisdom = field[8].GetUInt32();
+
+            return item;
+
+        } while (result->NextRow());
+
+        return nullptr;
     }
 
     static std::vector<std::unique_ptr<dnd_item>> GetItems(Player* player)
@@ -224,7 +331,7 @@ private:
         return result;
     }
 
-    static std::unique_ptr<dnd_bonus_table> Calculate(std::unique_ptr<dnd_proficiency>&& proficiency, std::unique_ptr<dnd_race>&& race, std::vector<std::unique_ptr<dnd_item>> items)
+    static std::unique_ptr<dnd_bonus_table> Calculate(std::unique_ptr<dnd_proficiency>&& proficiency, std::unique_ptr<dnd_race>&& race, std::vector<std::unique_ptr<dnd_item>>&& items)
     {
         auto table = std::make_unique<dnd_bonus_table>();
         uint32 melee_hit    = 0;
@@ -287,7 +394,7 @@ private:
         }
 
         auto items = GetItems(player);
-        return Calculate(std::move(proficiency), std::move(race), items);
+        return Calculate(std::move(proficiency), std::move(race), std::move(items));
     }
 
     static bool HandleDndRollStatCommand(ChatHandler* handler, char const* args)
