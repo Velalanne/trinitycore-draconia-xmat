@@ -597,7 +597,7 @@ void CharacterDatabaseConnection::DoPrepareStatements()
 
     // custom
     PrepareStatement(CHAR_SEL_CHARACTER_MODIFICATION, "SELECT scale,display_id FROM character_modification WHERE guid = ?", CONNECTION_SYNCH); // xmat
-    PrepareStatement(CHAR_SEL_DND_CHARACTER, "SELECT id, race_id, class_id, level FROM dnd_character WHERE id = ?", CONNECTION_SYNCH);
+    PrepareStatement(CHAR_SEL_DND_CHARACTER, "SELECT id, race_id, class_id, dnd_level FROM dnd_character WHERE id = ?", CONNECTION_SYNCH);
 
 }
 
