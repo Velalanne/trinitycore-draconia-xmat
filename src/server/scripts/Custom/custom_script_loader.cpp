@@ -19,6 +19,7 @@
 void AddSC_gameobject_lock_script();
 void AddSC_xray_on_login();
 void AddSC_npc_managed_guild();
+void AddSC_dnd_commandscript();
 
 // The name of this function should match:
 // void Add${NameOfDirectory}Scripts()
@@ -27,4 +28,5 @@ void AddCustomScripts()
     AddSC_gameobject_lock_script();
     AddSC_xray_on_login();
     AddSC_npc_managed_guild();
+    AddSC_dnd_commandscript();
 }

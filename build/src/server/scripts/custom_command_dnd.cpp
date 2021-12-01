@@ -16,6 +16,7 @@
 #include <vector>
 #include <memory>
 #include <stdexcept>
+#include <unordered_set>
 
 #if TRINITY_COMPILER == TRINITY_COMPILER_GNU
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
@@ -101,15 +102,8 @@ private:
     static std::unordered_set<std::string> charisma;
 
 public:
-    dnd_commandscript() : CommandScript("dnd_commandscript")
-    {
-        strength = std::unordered_set<std::string>{ "s", "str", "strength" };
-        dexterity = std::unordered_set<std::string>{ "d", "dex", "dexterity" };
-        constitution = std::unordered_set<std::string>{ "co", "con", "constitution" };
-        intelligence = std::unordered_set<std::string>{ "i", "int", "intelligence" };
-        wisdom = std::unordered_set<std::string>{ "w", "wis", "wisdom" };
-        charisma = std::unordered_set<std::string>{ "ch", "cha", "char", "charisma" };
-    }
+
+    dnd_commandscript() : CommandScript("dnd_commandscript") {}
 
     std::vector<ChatCommand> GetCommands() const override
     {
@@ -612,6 +606,13 @@ private:
         return HandleDndRollHitCommand(handler, args, Hit::Spell);
     }
 };
+
+std::unordered_set<std::string> dnd_commandscript::strength = std::unordered_set<std::string>{ "s", "str", "strength" };
+std::unordered_set<std::string> dnd_commandscript::dexterity = std::unordered_set<std::string>{ "d", "dex", "dexterity" };
+std::unordered_set<std::string> dnd_commandscript::constitution = std::unordered_set<std::string>{ "co", "con", "constitution" };
+std::unordered_set<std::string> dnd_commandscript::intelligence = std::unordered_set<std::string>{ "i", "int", "intelligence" };
+std::unordered_set<std::string> dnd_commandscript::wisdom = std::unordered_set<std::string>{ "w", "wis", "wisdom" };
+std::unordered_set<std::string> dnd_commandscript::charisma = std::unordered_set<std::string>{ "ch", "cha", "char", "charisma" };
 
 void AddSC_dnd_commandscript()
 {
