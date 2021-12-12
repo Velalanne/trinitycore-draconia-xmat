@@ -155,27 +155,74 @@ private:
     static std::pair<int, int> ParseDiceDescription(std::string const& dice)
     {
         auto d_position = dice.find_first_of('d');
-        auto dices_str = dice.substr(0, d_position - 1);
-        auto dices = std::stoi(dices_str);
-        auto faces_str = dice.substr(d_position);
-        auto faces = std::stoi(faces_str);
+        if ((d_position == std::string::npos) || (d_position == 0)){
+            return std::pair(0, 0);
+        }
+        int dices = 0;
+        int faces = 0;
+        try
+        {
+            auto dices_str = dice.substr(0, d_position);
+            dices = std::strtoimax(dices_str.c_str(), nullptr, 10);
+            if ((dices < 1) || (dices > 256) || (d_position + 1 >= dice.size()))
+            {
+                return std::pair(0, 0);
+            }
+            auto faces_str = dice.substr(d_position + 1);
+            faces = std::strtoimax(faces_str.c_str(), nullptr, 10);
+        }
+        catch (...)
+        {
+            return std::pair(0, 0);
+        }
+
         return std::pair(dices, faces);
     }
 
     static std::tuple<int, int, int> ParseDiceCommand(char const* args)
     {
         auto text = std::string(args);
+        if (text.empty())
+        {
+            return std::tuple(0, 0, 0);
+        }
         auto dice_pair = SplitByWhitespace(text, 0);
         auto dice = ParseDiceDescription(dice_pair.first);
-        auto bonus_pair = SplitByWhitespace(text, dice_pair.second);
-        auto bonus = std::stoi(bonus_pair.first);
+        if ((dice.first == 0) || (dice.second == 0))
+        {
+            return std::tuple(0, 0, 0);
+        }
 
+        if (dice_pair.second >= text.size())
+        {
+            return std::tuple(dice.first, dice.second, 0);
+        }
+        auto bonus_pair = SplitByWhitespace(text, dice_pair.second);
+        int bonus = 0;
+        try
+        {
+            bonus = std::strtoimax(bonus_pair.first.c_str(), nullptr, 10);
+            if ((bonus < -254) || (bonus > 255))
+            {
+                return std::tuple(0, 0, 0);
+            }
+        }
+        catch (...)
+        {
+            return std::tuple(0, 0, 0);
+        }
         return std::tuple(dice.first, dice.second, bonus);
     }
 
     static bool HandleDndRollDiceCommand(ChatHandler* handler, char const* args)
     {
         auto dice = ParseDiceCommand(args);
+        if ((std::get<0>(dice) == 0) || (std::get<1>(dice) == 0))
+        {
+            handler->PSendSysMessage(LANG_COMMAND_DND_ROLL_DICE_ERROR);
+            handler->SetSentErrorMessage(true);
+            return false;
+        }
         auto rolled = 0;
         for (std::size_t i = 0; i < std::get<0>(dice); ++i)
         {
