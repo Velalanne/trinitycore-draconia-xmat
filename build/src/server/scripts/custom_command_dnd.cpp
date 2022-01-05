@@ -634,7 +634,7 @@ private:
         auto total = rolled + values.first;
         auto stat_print = PrintStat(stat);
 
-        handler->PSendSysMessage(LANG_COMMAND_DND_ROLL_STAT, handler->GetNameLink(player).c_str(), stat_print, total, rolled, values.first, values.second, hit_bonus);
+        handler->PSendSysMessage(LANG_COMMAND_DND_ROLL_STAT_HIT, handler->GetNameLink(player).c_str(), stat_print, total, rolled, values.first, values.second, hit_bonus);
         return true;
     }
 
