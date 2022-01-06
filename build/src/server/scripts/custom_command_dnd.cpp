@@ -81,25 +81,23 @@ struct dnd_bonus_table
     int32 ranged_hit;
     int32 spell_hit;
     std::pair<int32, int32> strength; //stat, prof
-    std::pair<int32, int32> dexterity; //stat, prof
-    std::pair<int32, int32> constitution; //stat, prof
-    std::pair<int32, int32> intelligence; //stat, prof
-    std::pair<int32, int32> wisdom; //stat, prof
-    std::pair<int32, int32> charisma;
+    std::pair<int32, int32> agility; //stat, prof
+    std::pair<int32, int32> stamina; //stat, prof
+    std::pair<int32, int32> intellect; //stat, prof
+    std::pair<int32, int32> spirit; //stat, prof
 };
 
 class dnd_commandscript : public CommandScript
 {
 private:
     enum class Hit : char {Melee, Ranged, Spell};
-    enum class Stat : char { Strength, Dexterity, Constitution, Intelligence, Wisdom, Charisma, Nothing };
+    enum class Stat : char { Strength, Agility, Stamina, Intellect, Spirit, Nothing };
 
     static std::unordered_set<std::string> strength;
-    static std::unordered_set<std::string> dexterity;
-    static std::unordered_set<std::string> constitution;
-    static std::unordered_set<std::string> intelligence;
-    static std::unordered_set<std::string> wisdom;
-    static std::unordered_set<std::string> charisma;
+    static std::unordered_set<std::string> agility;
+    static std::unordered_set<std::string> stamina;
+    static std::unordered_set<std::string> intellect;
+    static std::unordered_set<std::string> spirit;
 
 public:
 
@@ -475,25 +473,21 @@ private:
         {
             return dnd_commandscript::Stat::Strength;
         }
-        else if (dexterity.find(stat) != dexterity.end())
+        else if (agility.find(stat) != agility.end())
         {
-            return dnd_commandscript::Stat::Dexterity;
+            return dnd_commandscript::Stat::Agility;
         }
-        else if (constitution.find(stat) != constitution.end())
+        else if (stamina.find(stat) != stamina.end())
         {
-            return dnd_commandscript::Stat::Constitution;
+            return dnd_commandscript::Stat::Stamina;
         }
-        else if (intelligence.find(stat) != intelligence.end())
+        else if (intellect.find(stat) != intellect.end())
         {
-            return dnd_commandscript::Stat::Intelligence;
+            return dnd_commandscript::Stat::Intellect;
         }
-        else if (wisdom.find(stat) != wisdom.end())
+        else if (spirit.find(stat) != spirit.end())
         {
-            return dnd_commandscript::Stat::Wisdom;
-        }
-        else if (charisma.find(stat) != charisma.end())
-        {
-            return dnd_commandscript::Stat::Charisma;
+            return dnd_commandscript::Stat::Spirit;
         }
         else
         {
@@ -507,16 +501,14 @@ private:
         {
         case dnd_commandscript::Stat::Strength:
             return table->strength;
-        case dnd_commandscript::Stat::Dexterity:
-            return table->dexterity;
-        case dnd_commandscript::Stat::Constitution:
-            return table->constitution;
-        case dnd_commandscript::Stat::Intelligence:
-            return table->intelligence;
-        case dnd_commandscript::Stat::Wisdom:
-            return table->wisdom;
-        case dnd_commandscript::Stat::Charisma:
-            return table->charisma;
+        case dnd_commandscript::Stat::Agility:
+            return table->agility;
+        case dnd_commandscript::Stat::Stamina:
+            return table->stamina;
+        case dnd_commandscript::Stat::Intellect:
+            return table->intellect;
+        case dnd_commandscript::Stat::Spirit:
+            return table->spirit;
         case dnd_commandscript::Stat::Nothing:
             return std::make_pair(0, 0);
         default:
@@ -530,16 +522,14 @@ private:
         {
         case dnd_commandscript::Stat::Strength:
             return "strength";
-        case dnd_commandscript::Stat::Dexterity:
-            return "dexterity";
-        case dnd_commandscript::Stat::Constitution:
-            return "sconstitution";
-        case dnd_commandscript::Stat::Intelligence:
-            return "intelligence";
-        case dnd_commandscript::Stat::Wisdom:
-            return "wisdom";
-        case dnd_commandscript::Stat::Charisma:
-            return "charisma";
+        case dnd_commandscript::Stat::Agility:
+            return "agility";
+        case dnd_commandscript::Stat::Stamina:
+            return "stamina";
+        case dnd_commandscript::Stat::Intellect:
+            return "intellect";
+        case dnd_commandscript::Stat::Spirit:
+            return "spirit";
         case dnd_commandscript::Stat::Nothing:
             return "nothing";
         default:
@@ -654,12 +644,11 @@ private:
     }
 };
 
-std::unordered_set<std::string> dnd_commandscript::strength = std::unordered_set<std::string>{ "s", "str", "strength" };
-std::unordered_set<std::string> dnd_commandscript::dexterity = std::unordered_set<std::string>{ "d", "dex", "dexterity" };
-std::unordered_set<std::string> dnd_commandscript::constitution = std::unordered_set<std::string>{ "co", "con", "constitution" };
-std::unordered_set<std::string> dnd_commandscript::intelligence = std::unordered_set<std::string>{ "i", "int", "intelligence" };
-std::unordered_set<std::string> dnd_commandscript::wisdom = std::unordered_set<std::string>{ "w", "wis", "wisdom" };
-std::unordered_set<std::string> dnd_commandscript::charisma = std::unordered_set<std::string>{ "ch", "cha", "char", "charisma" };
+std::unordered_set<std::string> dnd_commandscript::strength = std::unordered_set<std::string>{ "str", "strength" };
+std::unordered_set<std::string> dnd_commandscript::agility = std::unordered_set<std::string>{ "a", "ag", "agi", "agility" };
+std::unordered_set<std::string> dnd_commandscript::stamina = std::unordered_set<std::string>{ "sta", "stam", "stamina" };
+std::unordered_set<std::string> dnd_commandscript::intellect = std::unordered_set<std::string>{ "i", "int", "intellect" };
+std::unordered_set<std::string> dnd_commandscript::spirit = std::unordered_set<std::string>{ "sp", "spi", "spir", "spirit" };
 
 void AddSC_dnd_commandscript()
 {
