@@ -202,9 +202,9 @@ private:
     static std::unique_ptr<dnd_bonus_table> GetBonusTable(Player* player)
     {
         auto table = std::make_unique<dnd_bonus_table>();
-        uint32 melee_hit = player->m_modMeleeHitChance;
-        uint32 ranged_hit = player->m_modRangedHitChance;
-        uint32 spell_hit = player->m_modSpellHitChance;
+        uint32 melee_hit = player->GetUInt32Value(PLAYER_FIELD_COMBAT_RATING_1 + CombatRating::CR_HIT_MELEE);
+        uint32 ranged_hit = player->GetUInt32Value(PLAYER_FIELD_COMBAT_RATING_1 + CombatRating::CR_HIT_RANGED);
+        uint32 spell_hit = player->GetUInt32Value(PLAYER_FIELD_COMBAT_RATING_1 + CombatRating::CR_HIT_SPELL);
 
         uint32 strength = player->GetTotalStatValue(Stats::STAT_STRENGTH);
         uint32 agility = player->GetTotalStatValue(Stats::STAT_AGILITY);
@@ -381,7 +381,7 @@ private:
         auto total = rolled + values.first;
         auto stat_print = PrintStat(stat);
 
-        handler->PSendSysMessage(LANG_COMMAND_DND_ROLL_STAT_HIT, handler->GetNameLink(player).c_str(), stat_print.c_str(), total, rolled, values.first, values.second, hit_bonus);
+        handler->PSendSysMessage(LANG_COMMAND_DND_ROLL_STAT_HIT, handler->GetNameLink(player).c_str(), stat_print.c_str(), total, rolled, values.first, hit_bonus, values.second);
         return true;
     }
 
