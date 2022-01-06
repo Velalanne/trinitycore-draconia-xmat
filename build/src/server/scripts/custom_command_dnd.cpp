@@ -12,6 +12,7 @@
 #include "Item.h"
 #include "DatabaseEnv.h"
 #include "DatabaseEnvFwd.h"
+#include "Group.h"
 #include <tuple>
 #include <vector>
 #include <memory>
@@ -309,6 +310,21 @@ private:
     static std::pair<int32, int32> XMod(std::pair<int32, int32>&& statAndProf)
     {
         return std::make_pair(std::max((statAndProf.first - 50) / 5, 0), std::move(statAndProf.second));
+    }
+
+    static std::vector<Player*> GetGroup(Player* player) {
+        auto group = player->GetGroup();
+        auto member = group->GetFirstMember();
+        auto result = std::vector<Player*>();
+
+        result.push_back(member->GetSource());
+        while (member->hasNext())
+        {
+            member = member->next();
+            result.push_back(member->GetSource());
+        }
+
+        return result;
     }
 
     static bool HandleDndRollStatCommand(ChatHandler* handler, char const* args)
