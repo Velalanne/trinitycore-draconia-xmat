@@ -141,7 +141,7 @@ private:
     {
         for (std::size_t i = start; i < text.size(); ++i)
         {
-            if (std::isspace(text[start]))
+            if (std::isspace(text[i]))
             {
                 auto result = text.substr(start, i - start);
                 return std::pair(result, FindFirstNotWhitespace(text, i));
@@ -234,7 +234,7 @@ private:
 
         auto player = handler->GetSession()->GetPlayer();
 
-        handler->PSendSysMessage(LANG_COMMAND_DND_ROLL_DICE, handler->GetNameLink(player).c_str(), result, bonus);
+        handler->PSendSysMessage(LANG_COMMAND_DND_ROLL_DICE, handler->GetNameLink(player).c_str(), std::get<0>(dice), std::get<1>(dice), std::get<2>(dice), result, bonus);
         return true;
     }
 
