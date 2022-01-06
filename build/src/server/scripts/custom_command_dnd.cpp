@@ -22,59 +22,6 @@
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 #endif
 
-struct dnd_proficiency
-{
-    uint32 id;
-    uint32 class_id;
-    uint32 level;
-    int32 strength;
-    int32 dexterity;
-    int32 constitution;
-    int32 intelligence;
-    int32 wisdom;
-    int32 charisma;
-};
-
-struct dnd_class
-{
-    uint32 id;
-    std::string name;
-};
-
-struct dnd_race
-{
-    uint32 id;
-    std::string name;
-    int32 strength;
-    int32 dexterity;
-    int32 constitution;
-    int32 intelligence;
-    int32 wisdom;
-    int32 charisma;
-};
-
-struct dnd_item
-{
-    uint32 id;
-    int32 melee_hit;
-    int32 ranged_hit;
-    int32 spell_hit;
-    int32 strength;
-    int32 dexterity;
-    int32 constitution;
-    int32 intelligence;
-    int32 wisdom;
-    int32 charisma;
-};
-
-struct dnd_character
-{
-    uint32 id;
-    uint32 race_id;
-    uint32 class_id;
-    uint32 level;
-};
-
 struct dnd_bonus_table
 {
     int32 melee_hit;
@@ -236,100 +183,6 @@ private:
         return true;
     }
 
-    static std::unique_ptr<dnd_character> GetCharacter(uint32 character_id)
-    {
-        auto stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_DND_CHARACTER);
-        stmt->setUInt32(0, character_id);
-        auto result = CharacterDatabase.Query(stmt);
-
-        if (!result)
-        {
-            return nullptr;
-        }
-
-        do
-        {
-            auto field = result->Fetch();
-
-            auto character = std::make_unique<dnd_character>();
-            character->id = field[0].GetUInt32();
-            character->race_id = field[1].GetUInt32();
-            character->class_id = field[2].GetUInt32();
-            character->level = field[3].GetUInt32();
-            return character;
-
-        } while (result->NextRow());
-
-        return nullptr;
-    }
-
-    static std::unique_ptr<dnd_race> GetRace(uint32 dnd_race_id)
-    {
-        auto stmt = WorldDatabase.GetPreparedStatement(WORLD_SEL_DND_RACE);
-        stmt->setUInt32(0, dnd_race_id);
-        auto result = WorldDatabase.Query(stmt);
-
-        if (!result)
-        {
-            return nullptr;
-        }
-
-        do
-        {
-            auto field = result->Fetch();
-
-            auto race = std::make_unique<dnd_race>();
-            race->id = field[0].GetUInt32();
-            race->name = field[1].GetString();
-            race->strength = field[2].GetUInt32();
-            race->dexterity = field[3].GetUInt32();
-            race->constitution = field[4].GetUInt32();
-            race->intelligence = field[5].GetUInt32();
-            race->wisdom = field[6].GetUInt32();
-            race->charisma = field[7].GetUInt32();
-            return race;
-
-        } while (result->NextRow());
-
-        return nullptr;
-    }
-
-    static std::unique_ptr<dnd_proficiency> GetProficiency(uint32 dnd_class_id, uint32 dnd_level)
-    {
-        auto stmt = WorldDatabase.GetPreparedStatement(WORLD_SEL_DND_PROFICIENCY);
-        stmt->setUInt32(0, dnd_class_id);
-        auto result = WorldDatabase.Query(stmt);
-
-        if (!result)
-        {
-            return nullptr;
-        }
-
-        do
-        {
-            auto field = result->Fetch();
-
-            auto proficiency = std::make_unique<dnd_proficiency>();
-            proficiency->id = field[0].GetUInt32();
-            proficiency->class_id = field[1].GetUInt32();
-            proficiency->level = field[2].GetUInt32();
-            proficiency->strength = field[3].GetUInt32();
-            proficiency->dexterity = field[4].GetUInt32();
-            proficiency->constitution = field[5].GetUInt32();
-            proficiency->intelligence = field[6].GetUInt32();
-            proficiency->wisdom = field[7].GetUInt32();
-            proficiency->charisma = field[8].GetUInt32();
-
-            if (proficiency->level == dnd_level)
-            {
-                return proficiency;
-            }
-
-        } while (result->NextRow());
-
-        return nullptr;
-    }
-
     static std::vector<Item*> EquippedItems(Player* player)
     {
         auto result = std::vector<Item*>();
@@ -346,125 +199,29 @@ private:
         return result;
     }
 
-    static std::unique_ptr<dnd_item> GetItem(uint32 item_id)
-    {
-        auto stmt = WorldDatabase.GetPreparedStatement(WORLD_SEL_DND_ITEM);
-        stmt->setUInt32(0, item_id);
-        auto result = WorldDatabase.Query(stmt);
-
-        if (!result)
-        {
-            return nullptr;
-        }
-
-        do
-        {
-            auto field = result->Fetch();
-
-            auto item = std::make_unique<dnd_item>();
-            item->id = field[0].GetUInt32();
-            item->melee_hit = field[1].GetUInt32();
-            item->ranged_hit = field[2].GetUInt32();
-            item->spell_hit = field[3].GetUInt32();
-            item->strength = field[4].GetUInt32();
-            item->dexterity = field[5].GetUInt32();
-            item->constitution = field[6].GetUInt32();
-            item->intelligence = field[7].GetUInt32();
-            item->wisdom = field[8].GetUInt32();
-            item->charisma = field[9].GetUInt32();
-
-            return item;
-
-        } while (result->NextRow());
-
-        return nullptr;
-    }
-
-    static std::vector<std::unique_ptr<dnd_item>> GetItems(Player* player)
-    {
-        auto result = std::vector<std::unique_ptr<dnd_item>>();
-        auto items = EquippedItems(player);
-
-        for (auto&& item : items)
-        {
-            auto dnd = GetItem(item->GetGUID().GetCounter());
-            if (dnd != nullptr)
-            {
-                result.push_back(std::move(dnd));
-            }
-        }
-
-        return result;
-    }
-
-    static std::unique_ptr<dnd_bonus_table> Calculate(std::unique_ptr<dnd_proficiency>&& proficiency, std::unique_ptr<dnd_race>&& race, std::vector<std::unique_ptr<dnd_item>>&& items)
-    {
-        auto table = std::make_unique<dnd_bonus_table>();
-        uint32 melee_hit    = 0;
-        uint32 ranged_hit   = 0;
-        uint32 spell_hit    = 0;
-        uint32 strength     = 0;
-        uint32 dexterity    = 0;
-        uint32 constitution = 0;
-        uint32 intelligence = 0;
-        uint32 wisdom       = 0;
-        uint32 charisma     = 0;
-
-        for (auto&& item : items)
-        {
-            melee_hit += item->melee_hit;
-            ranged_hit += item->ranged_hit;
-            spell_hit += item->spell_hit;
-            strength += item->strength;
-            dexterity += item->dexterity;
-            constitution += item->constitution;
-            intelligence += item->intelligence;
-            wisdom += item->wisdom;
-            charisma += item->charisma;
-        }
-
-        strength += race->strength;
-        dexterity += race->dexterity;
-        constitution += race->constitution;
-        intelligence += race->intelligence;
-        wisdom += race->wisdom;
-        charisma += race->charisma;
-
-        table->melee_hit    = melee_hit;
-        table->ranged_hit   = ranged_hit;
-        table->spell_hit    = spell_hit;
-        table->strength     = std::make_pair(strength, proficiency->strength);
-        table->dexterity    = std::make_pair(dexterity, proficiency->dexterity);
-        table->constitution = std::make_pair(constitution, proficiency->constitution);
-        table->intelligence = std::make_pair(intelligence, proficiency->intelligence);
-        table->wisdom       = std::make_pair(wisdom, proficiency->wisdom);
-        table->charisma     = std::make_pair(charisma, proficiency->charisma);
-
-        return table;
-    }
-
     static std::unique_ptr<dnd_bonus_table> GetBonusTable(Player* player)
     {
-        auto character = GetCharacter(player->GetGUID().GetCounter());
-        if (character == nullptr)
-        {
-            return nullptr;
-        }
+        auto table = std::make_unique<dnd_bonus_table>();
+        uint32 melee_hit = player->m_modMeleeHitChance;
+        uint32 ranged_hit = player->m_modRangedHitChance;
+        uint32 spell_hit = player->m_modSpellHitChance;
 
-        auto race = GetRace(character->race_id);
-        if (race == nullptr)
-        {
-            return nullptr;
-        }
+        uint32 strength = player->GetTotalStatValue(Stats::STAT_STRENGTH);
+        uint32 agility = player->GetTotalStatValue(Stats::STAT_AGILITY);
+        uint32 stamina = player->GetTotalStatValue(Stats::STAT_STAMINA);
+        uint32 intellect = player->GetTotalStatValue(Stats::STAT_INTELLECT);
+        uint32 spirit = player->GetTotalStatValue(Stats::STAT_SPIRIT);
 
-        auto proficiency = GetProficiency(character->class_id, character->level);
-        if (proficiency == nullptr)
-        {
-            return nullptr;
-        }
+        table->melee_hit = melee_hit;
+        table->ranged_hit = ranged_hit;
+        table->spell_hit = spell_hit;
+        table->strength = std::make_pair(strength,   0);
+        table->agility = std::make_pair(agility,     0);
+        table->stamina = std::make_pair(stamina,     0);
+        table->intellect = std::make_pair(intellect, 0);
+        table->spirit = std::make_pair(spirit,       0);
 
-        auto items = GetItems(player);
-        return Calculate(std::move(proficiency), std::move(race), std::move(items));
+        return table;
     }
 
     static Stat ParseStat(std::string&& stat)
@@ -551,7 +308,7 @@ private:
 
     static std::pair<int32, int32> XMod(std::pair<int32, int32>&& statAndProf)
     {
-        return std::make_pair((statAndProf.first - 10) / 2, std::move(statAndProf.second));
+        return std::make_pair(std::max((statAndProf.first - 50) / 5, 0), std::move(statAndProf.second));
     }
 
     static bool HandleDndRollStatCommand(ChatHandler* handler, char const* args)
@@ -579,7 +336,7 @@ private:
         auto total = rolled + values.first;
         auto stat_print = PrintStat(stat);
 
-        handler->PSendSysMessage(LANG_COMMAND_DND_ROLL_STAT, handler->GetNameLink(player).c_str(), stat_print, total, rolled, values.first, values.second);
+        handler->PSendSysMessage(LANG_COMMAND_DND_ROLL_STAT, handler->GetNameLink(player).c_str(), stat_print.c_str(), total, rolled, values.first, values.second);
         return true;
     }
 
@@ -624,7 +381,7 @@ private:
         auto total = rolled + values.first;
         auto stat_print = PrintStat(stat);
 
-        handler->PSendSysMessage(LANG_COMMAND_DND_ROLL_STAT_HIT, handler->GetNameLink(player).c_str(), stat_print, total, rolled, values.first, values.second, hit_bonus);
+        handler->PSendSysMessage(LANG_COMMAND_DND_ROLL_STAT_HIT, handler->GetNameLink(player).c_str(), stat_print.c_str(), total, rolled, values.first, values.second, hit_bonus);
         return true;
     }
 
