@@ -180,7 +180,7 @@ private:
 
         auto player = handler->GetSession()->GetPlayer();
 
-        handler->PSendSysMessage(LANG_COMMAND_DND_ROLL_DICE, handler->GetNameLink(player).c_str(), std::get<0>(dice), std::get<1>(dice), std::get<2>(dice), result, bonus);
+        handler->PSendSysMessage(LANG_COMMAND_DND_ROLL_DICE, handler->GetNameLink(player).c_str(), std::get<0>(dice), std::get<1>(dice), result, rolled, bonus);
         return true;
     }
 
@@ -352,7 +352,7 @@ private:
         auto total = rolled + values.first;
         auto stat_print = PrintStat(stat);
 
-        handler->PSendSysMessage(LANG_COMMAND_DND_ROLL_STAT, handler->GetNameLink(player).c_str(), stat_print.c_str(), total, rolled, values.first, values.second);
+        handler->PSendSysMessage(LANG_COMMAND_DND_ROLL_STAT, handler->GetNameLink(player).c_str(), stat_print.c_str(), total, rolled, values.first);
         return true;
     }
 
@@ -397,7 +397,7 @@ private:
         auto total = rolled + values.first;
         auto stat_print = PrintStat(stat);
 
-        handler->PSendSysMessage(LANG_COMMAND_DND_ROLL_STAT_HIT, handler->GetNameLink(player).c_str(), stat_print.c_str(), total, rolled, values.first, hit_bonus, values.second);
+        handler->PSendSysMessage(LANG_COMMAND_DND_ROLL_STAT_HIT, handler->GetNameLink(player).c_str(), stat_print.c_str(), total, rolled, values.first, hit_bonus);
         return true;
     }
 
