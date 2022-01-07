@@ -179,8 +179,13 @@ private:
         auto result = rolled + bonus;
 
         auto player = handler->GetSession()->GetPlayer();
+        auto players = GetGroupPlayers(player);
+        auto message = BuildPacket(handler, LANG_COMMAND_DND_ROLL_DICE, handler->GetNameLink(player).c_str(), std::get<0>(dice), std::get<1>(dice), result, rolled, bonus);
+        for (auto&& item : players)
+        {
+            player->GetSession()->SendPacket(&message);
+        }
 
-        handler->PSendSysMessage(LANG_COMMAND_DND_ROLL_DICE, handler->GetNameLink(player).c_str(), std::get<0>(dice), std::get<1>(dice), result, rolled, bonus);
         return true;
     }
 
@@ -312,11 +317,17 @@ private:
         return std::make_pair(std::max((statAndProf.first - 50) / 5, 0), std::move(statAndProf.second));
     }
 
-    static std::vector<Player*> GetGroup(Player* player) {
+    static std::vector<Player*> GetGroupPlayers(Player* player) {
         auto group = player->GetGroup();
-        auto member = group->GetFirstMember();
         auto result = std::vector<Player*>();
+        result.push_back(player);
 
+        if (group == nullptr)
+        {
+            return result;
+        }
+
+        auto member = group->GetFirstMember();
         result.push_back(member->GetSource());
         while (member->hasNext())
         {
@@ -325,6 +336,15 @@ private:
         }
 
         return result;
+    }
+
+    template<typename... Args>
+    static WorldPacket BuildPacket(ChatHandler* handler, uint32 entry, Args&&... args)
+    {
+        std::string message{ handler->PGetParseString(entry, std::forward<Args>(args)...).c_str() };
+        WorldPacket data;
+        handler->BuildChatPacket(data, CHAT_MSG_SYSTEM, LANG_UNIVERSAL, nullptr, nullptr, message);
+        return data;
     }
 
     static bool HandleDndRollStatCommand(ChatHandler* handler, char const* args)
@@ -352,7 +372,13 @@ private:
         auto total = rolled + values.first;
         auto stat_print = PrintStat(stat);
 
-        handler->PSendSysMessage(LANG_COMMAND_DND_ROLL_STAT, handler->GetNameLink(player).c_str(), stat_print.c_str(), total, rolled, values.first);
+        auto players = GetGroupPlayers(player);
+        auto message = BuildPacket(handler, LANG_COMMAND_DND_ROLL_STAT, handler->GetNameLink(player).c_str(), stat_print.c_str(), total, rolled, values.first);
+        for (auto&& item : players)
+        {
+            player->GetSession()->SendPacket(&message);
+        }
+
         return true;
     }
 
@@ -397,7 +423,13 @@ private:
         auto total = rolled + values.first;
         auto stat_print = PrintStat(stat);
 
-        handler->PSendSysMessage(LANG_COMMAND_DND_ROLL_STAT_HIT, handler->GetNameLink(player).c_str(), stat_print.c_str(), total, rolled, values.first, hit_bonus);
+        auto players = GetGroupPlayers(player);
+        auto message = BuildPacket(handler, LANG_COMMAND_DND_ROLL_STAT_HIT, handler->GetNameLink(player).c_str(), stat_print.c_str(), total, rolled, values.first, hit_bonus);
+        for (auto&& item : players)
+        {
+            player->GetSession()->SendPacket(&message);
+        }
+
         return true;
     }
 
