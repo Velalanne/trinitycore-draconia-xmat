@@ -172,7 +172,7 @@ private:
         auto rolled = 0;
         for (std::size_t i = 0; i < std::get<0>(dice); ++i)
         {
-            rolled = irand(1, std::get<1>(dice));
+            rolled += irand(1, std::get<1>(dice));
         }
 
         auto bonus = std::get<2>(dice);
@@ -376,7 +376,7 @@ private:
         auto message = BuildPacket(handler, LANG_COMMAND_DND_ROLL_STAT, handler->GetNameLink(player).c_str(), stat_print.c_str(), total, rolled, values.first);
         for (auto&& item : players)
         {
-            player->GetSession()->SendPacket(&message);
+            item->GetSession()->SendPacket(&message);
         }
 
         return true;
@@ -427,7 +427,7 @@ private:
         auto message = BuildPacket(handler, LANG_COMMAND_DND_ROLL_STAT_HIT, handler->GetNameLink(player).c_str(), stat_print.c_str(), total, rolled, values.first, hit_bonus);
         for (auto&& item : players)
         {
-            player->GetSession()->SendPacket(&message);
+            item->GetSession()->SendPacket(&message);
         }
 
         return true;
