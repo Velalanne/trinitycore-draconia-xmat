@@ -183,7 +183,7 @@ private:
         auto message = BuildPacket(handler, LANG_COMMAND_DND_ROLL_DICE, handler->GetNameLink(player).c_str(), std::get<0>(dice), std::get<1>(dice), result, rolled, bonus);
         for (auto&& item : players)
         {
-            player->GetSession()->SendPacket(&message);
+            item->GetSession()->SendPacket(&message);
         }
 
         return true;
