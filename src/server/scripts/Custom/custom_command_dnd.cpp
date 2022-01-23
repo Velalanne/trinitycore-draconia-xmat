@@ -320,10 +320,10 @@ private:
     static std::vector<Player*> GetGroupPlayers(Player* player) {
         auto group = player->GetGroup();
         auto result = std::vector<Player*>();
-        result.push_back(player);
 
         if (group == nullptr)
         {
+            result.push_back(player);
             return result;
         }
 
