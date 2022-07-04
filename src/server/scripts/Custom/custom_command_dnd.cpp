@@ -13,6 +13,7 @@
 #include "DatabaseEnv.h"
 #include "DatabaseEnvFwd.h"
 #include "Group.h"
+#include "ObjectAccessor.h"
 #include <tuple>
 #include <vector>
 #include <memory>
@@ -28,6 +29,7 @@ struct dnd_bonus_table
     int32 melee_hit;
     int32 ranged_hit;
     int32 spell_hit;
+    int32 defense;
     std::pair<int32, int32> strength; //stat, prof
     std::pair<int32, int32> agility; //stat, prof
     std::pair<int32, int32> stamina; //stat, prof
@@ -55,19 +57,20 @@ public:
     {
         static std::vector<ChatCommand> dndRollCommandTable =
         {
-            { "melee",   rbac::RBAC_PERM_DND_ROLL_MELEE,  false, &HandleDndRollMeleeCommand, "" },
+            { "melee",   rbac::RBAC_PERM_DND_ROLL_MELEE,  false, &HandleDndRollMeleeCommand,  "" },
             { "ranged",  rbac::RBAC_PERM_DND_ROLL_RANGED, false, &HandleDndRollRangedCommand, "" },
-            { "spell",   rbac::RBAC_PERM_DND_ROLL_SPELL,  false, &HandleDndRollSpellCommand, "" },
-            { "stat",    rbac::RBAC_PERM_DND_ROLL_STAT,   false, &HandleDndRollStatCommand, "" },
-            { "dice",    rbac::RBAC_PERM_DND_ROLL_DICE,   false, &HandleDndRollDiceCommand, "" },
+            { "spell",   rbac::RBAC_PERM_DND_ROLL_SPELL,  false, &HandleDndRollSpellCommand,  "" },
+            { "stat",    rbac::RBAC_PERM_DND_ROLL_STAT,   false, &HandleDndRollStatCommand,   "" },
+            { "dice",    rbac::RBAC_PERM_DND_ROLL_DICE,   false, &HandleDndRollDiceCommand,   "" },
         };
         static std::vector<ChatCommand> dndCommandTable =
         {
-            { "roll",    rbac::RBAC_PERM_DND_ROLL,        false, nullptr,                   "", dndRollCommandTable },
+            { "roll",    rbac::RBAC_PERM_DND_ROLL,        false, nullptr,                     "", dndRollCommandTable },
+            { "oc",      rbac::RBAC_PERM_DND_OC,          false, &HandleDndOcCommand,         "" }
         };
         static std::vector<ChatCommand> commandTable =
         {
-            { "dnd",     rbac::RBAC_PERM_DND,             false, nullptr,                   "", dndCommandTable },
+            { "dnd",     rbac::RBAC_PERM_DND,             false, nullptr,                     "", dndCommandTable },
         };
         return commandTable;
     }
@@ -211,16 +214,18 @@ private:
         uint32 melee_hit = player->GetUInt32Value(PLAYER_FIELD_COMBAT_RATING_1 + CombatRating::CR_HIT_MELEE);
         uint32 ranged_hit = player->GetUInt32Value(PLAYER_FIELD_COMBAT_RATING_1 + CombatRating::CR_HIT_RANGED);
         uint32 spell_hit = player->GetUInt32Value(PLAYER_FIELD_COMBAT_RATING_1 + CombatRating::CR_HIT_SPELL);
+        uint32 defense = player->GetUInt32Value(PLAYER_FIELD_COMBAT_RATING_1 + CombatRating::CR_DEFENSE_SKILL);
 
         uint32 strength = player->GetTotalStatValue(Stats::STAT_STRENGTH);
         uint32 agility = player->GetTotalStatValue(Stats::STAT_AGILITY);
         uint32 stamina = player->GetTotalStatValue(Stats::STAT_STAMINA);
         uint32 intellect = player->GetTotalStatValue(Stats::STAT_INTELLECT);
         uint32 spirit = player->GetTotalStatValue(Stats::STAT_SPIRIT);
-
+        
         table->melee_hit = melee_hit;
         table->ranged_hit = ranged_hit;
         table->spell_hit = spell_hit;
+        table->defense = defense;
         table->strength = std::make_pair(strength,   0);
         table->agility = std::make_pair(agility,     0);
         table->stamina = std::make_pair(stamina,     0);
@@ -314,7 +319,7 @@ private:
 
     static std::pair<int32, int32> XMod(std::pair<int32, int32>&& statAndProf)
     {
-        return std::make_pair(std::max((statAndProf.first - 50) / 5, 0), std::move(statAndProf.second));
+        return std::make_pair(std::max((statAndProf.first - 50) / 10, 0), std::move(statAndProf.second));
     }
 
     static std::vector<Player*> GetGroupPlayers(Player* player) {
@@ -433,6 +438,48 @@ private:
         return true;
     }
 
+    static Player* ParsePlayer(ChatHandler* handler, char const* args)
+    {
+        if (args == nullptr)
+        {
+            return nullptr;
+        }
+
+        Player* player = nullptr;
+        std::string name = args;
+        if (!name.empty())
+        {
+            if (!normalizePlayerName(name))
+            {
+                handler->SendSysMessage(LANG_PLAYER_NOT_FOUND);
+                handler->SetSentErrorMessage(true);
+                return player;
+            }
+
+            player = ObjectAccessor::FindPlayerByName(name);
+        }
+
+        return player;
+    }
+
+    static bool HandleDndOcCommandTarget(ChatHandler* handler, Player* target)
+    {
+        auto table = GetBonusTable(target);
+
+        if (table == nullptr)
+        {
+            handler->PSendSysMessage(LANG_COMMAND_DND_OC_ERROR);
+            handler->SetSentErrorMessage(true);
+            return false;
+        }
+        auto defense = table->defense - 190;
+        auto result = XMod(std::move(table->agility)).first + (defense);
+        auto player = handler->GetSession()->GetPlayer();
+
+        handler->PSendSysMessage(LANG_COMMAND_DND_OC, handler->GetNameLink(player).c_str(), result);
+        return true;
+    }
+
     static bool HandleDndRollMeleeCommand(ChatHandler* handler, char const* args)
     {
         return HandleDndRollHitCommand(handler, args, Hit::Melee);
@@ -446,6 +493,25 @@ private:
     static bool HandleDndRollSpellCommand(ChatHandler* handler, char const* args)
     {
         return HandleDndRollHitCommand(handler, args, Hit::Spell);
+    }
+
+    static bool HandleDndOcCommand(ChatHandler* handler, char const* args)
+    {
+        if (handler->GetSession()->HasPermission(rbac::RBAC_PERM_DND_OC_TARGET))
+        {
+            auto player = ParsePlayer(handler, args);
+
+            if (player == nullptr)
+            {
+                player = handler->getSelectedPlayerOrSelf();
+            }
+
+            return HandleDndOcCommandTarget(handler, player);
+        }
+        else
+        {
+            return HandleDndOcCommandTarget(handler, handler->GetSession()->GetPlayer());
+        }
     }
 };
 

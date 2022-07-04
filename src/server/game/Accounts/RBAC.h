@@ -751,6 +751,8 @@ enum RBACPermissions
     RBAC_PERM_DND_ROLL_RANGED                                = 886,
     RBAC_PERM_DND_ROLL_SPELL                                 = 887,
     RBAC_PERM_DND_ROLL_DICE                                  = 888,
+    RBAC_PERM_DND_OC                                         = 889,
+    RBAC_PERM_DND_OC_TARGET                                  = 890,
     //
     // IF YOU ADD NEW PERMISSIONS, ADD THEM IN MASTER BRANCH AS WELL!
     //

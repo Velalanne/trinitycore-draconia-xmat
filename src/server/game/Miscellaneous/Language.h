@@ -1220,5 +1220,7 @@ enum TrinityStrings
     LANG_COMMAND_DND_ROLL_STAT                    = 11021,
     LANG_COMMAND_DND_ROLL_STAT_ERROR              = 11022,
     LANG_COMMAND_DND_ROLL_STAT_HIT                = 11023,
+    LANG_COMMAND_DND_OC                           = 11024,
+    LANG_COMMAND_DND_OC_ERROR                     = 11025,
 };
 #endif
