@@ -476,7 +476,7 @@ private:
         auto result = XMod(std::move(table->agility)).first + (defense);
         auto player = handler->GetSession()->GetPlayer();
 
-        handler->PSendSysMessage(LANG_COMMAND_DND_OC, handler->GetNameLink(player).c_str(), result);
+        handler->PSendSysMessage(LANG_COMMAND_DND_OC, handler->GetNameLink(target).c_str(), result);
         return true;
     }
 
