@@ -214,7 +214,7 @@ private:
         uint32 melee_hit = player->GetUInt32Value(PLAYER_FIELD_COMBAT_RATING_1 + CombatRating::CR_HIT_MELEE);
         uint32 ranged_hit = player->GetUInt32Value(PLAYER_FIELD_COMBAT_RATING_1 + CombatRating::CR_HIT_RANGED);
         uint32 spell_hit = player->GetUInt32Value(PLAYER_FIELD_COMBAT_RATING_1 + CombatRating::CR_HIT_SPELL);
-        uint32 defense = player->GetUInt32Value(PLAYER_FIELD_COMBAT_RATING_1 + CombatRating::CR_DEFENSE_SKILL);
+        uint32 defense = player->GetSkillValue(SKILL_DEFENSE);
 
         uint32 strength = player->GetTotalStatValue(Stats::STAT_STRENGTH);
         uint32 agility = player->GetTotalStatValue(Stats::STAT_AGILITY);
@@ -319,7 +319,7 @@ private:
 
     static std::pair<int32, int32> XMod(std::pair<int32, int32>&& statAndProf)
     {
-        return std::make_pair(std::max((statAndProf.first - 50) / 10, 0), std::move(statAndProf.second));
+        return std::make_pair((statAndProf.first - 50) / 10, std::move(statAndProf.second));
     }
 
     static std::vector<Player*> GetGroupPlayers(Player* player) {
